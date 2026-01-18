@@ -1,0 +1,60 @@
+name: LeBr2 Production Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_API_TOKEN: GITHUB_API_HERE
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+          build-tools: 34.0.0
+
+      - name: Prepare Launcher Icons
+        run: |
+          ICON_PATH=icon.png
+          for D in hdpi mdpi xhdpi xxhdpi xxxhdpi; do
+            mkdir -p app/src/main/res/mipmap-$D
+            cp $ICON_PATH app/src/main/res/mipmap-$D/ic_launcher.png || true
+          done
+
+      - name: Assemble Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Create Release & Upload APK
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: LeBr2 v${{ github.event.inputs.version }}
+          body: "Production Release of LeBr2 APK (armeabi-v7a & arm64-v8a)"
+          files: app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release Complete
+        run: echo "✅ LeBr2 v${{ github.event.inputs.version }} APK released successfully 💖🚀"
+
