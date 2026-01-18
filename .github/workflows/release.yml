@@ -1,0 +1,76 @@
+name: LeBr2 Production Release
+
+# Trigger manually or on push to main
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub default token
+    steps:
+      # 1️⃣ Checkout the repo
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Java & Android SDK
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+          build-tools: 34.0.0
+
+      # 3️⃣ Ensure Gradle wrapper is executable
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x gradlew
+
+      # 4️⃣ Copy icon.png to mipmap folders
+      - name: Prepare Launcher Icons
+        run: |
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+          cp icon.png app/src/main/res/mipmap-*/ic_launcher.png || true
+
+      # 5️⃣ Assemble APK for all ABIs
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+
+      # 6️⃣ Create Release v1.0.0
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: LeBr2 v${{ github.event.inputs.version }}
+          body: "Production release of LeBr2 APK for v7a & v8a"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 7️⃣ Upload APK to Release
+      - name: Upload Release APK
+        uses: softprops/action-gh-release@v1
+        with:
+          files: app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ✅ Finished
+      - name: Success
+        run: echo "LeBr2 v${{ github.event.inputs.version }} APK released successfully! 💖🚀"
