@@ -1,0 +1,34 @@
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout android:orientation="horizontal" android:layout_width="match_parent">
+        <TextView android:id="@+id/httpsIndicator" android:text="🔒" android:padding="6dp"/>
+        <EditText android:id="@+id/urlBar" android:hint="Enter URL" android:layout_weight="1"/>
+        <Button android:id="@+id/goBtn" android:text="🏃"/>
+        <Button android:id="@+id/refreshBtn" android:text="🔄"/>
+    </LinearLayout>
+
+    <LinearLayout android:orientation="horizontal" android:layout_width="match_parent">
+        <Button android:id="@+id/backBtn" android:text="◀️"/>
+        <Button android:id="@+id/forwardBtn" android:text="▶️"/>
+        <Button android:id="@+id/bookmarkBtn" android:text="⭐"/>
+        <Button android:id="@+id/editBookmarksBtn" android:text="✏️⭐"/>
+        <Button android:id="@+id/incognitoBtn" android:text="🕶️"/>
+        <Button android:id="@+id/darkBtn" android:text="🌙"/>
+        <Button android:id="@+id/jsBtn" android:text="🧩"/>
+        <Button android:id="@+id/settingsBtn" android:text="⚙️"/>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/settingsPanel"
+        android:orientation="vertical" android:visibility="gone">
+        <Button android:id="@+id/clearHistoryBtn" android:text="🧹 Clear History"/>
+        <Button android:id="@+id/clearCookiesBtn" android:text="🍪❌ Clear Cookies"/>
+        <Button android:id="@+id/clearCacheBtn" android:text="🗑️ Clear Cache"/>
+        <Button android:id="@+id/clearAllBtn" android:text="💣 Clear ALL Data"/>
+    </LinearLayout>
+
+    <WebView android:id="@+id/webview" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+</LinearLayout>
