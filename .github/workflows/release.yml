@@ -20,7 +20,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2️⃣ Ensure Gradle Wrapper exists
+      # 2️⃣ Ensure Gradle Wrapper exists (if missing)
       - name: Add Gradle Wrapper if Missing
         run: |
           if [ ! -f ./gradlew ]; then
@@ -39,7 +39,7 @@ jobs:
             echo "Gradle wrapper exists."
           fi
 
-      # 3️⃣ Setup Java
+      # 3️⃣ Setup Java environment
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -57,7 +57,7 @@ jobs:
       - name: Make Gradle Executable
         run: chmod +x ./gradlew
 
-      # 6️⃣ Copy icon.png to all mipmap densities
+      # 6️⃣ Prepare the icon.png and copy it to mipmap folders
       - name: Prepare Launcher Icons
         run: |
           ICON_PATH=icon.png
@@ -67,11 +67,11 @@ jobs:
           done
 
       # 7️⃣ Build Release APK
-      - name: Build APK
+      - name: Assemble Release APK
         run: ./gradlew assembleRelease
 
-      # 8️⃣ Create Release and Upload APK
-      - name: Create Release and Upload APK
+      # 8️⃣ Create Release v1.0.0 and Upload APK
+      - name: Create Release & Upload APK
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.version }}
@@ -81,6 +81,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 9️⃣ Success
+      # 9️⃣ Success message
       - name: Release Complete
         run: echo "✅ LeBr2 v${{ github.event.inputs.version }} APK released successfully 💖🚀"
