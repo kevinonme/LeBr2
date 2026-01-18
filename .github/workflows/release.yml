@@ -13,31 +13,51 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_API_TOKEN: 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
 
     steps:
       # 1️⃣ Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Java
+      # 2️⃣ Ensure Gradle Wrapper exists
+      - name: Add Gradle Wrapper if Missing
+        run: |
+          if [ ! -f ./gradlew ]; then
+            echo "Gradle wrapper missing — generating..."
+            curl -s https://services.gradle.org/distributions/gradle-8.2-bin.zip -o gradle-8.2-bin.zip
+            unzip -q gradle-8.2-bin.zip
+            mkdir -p gradle/wrapper
+            echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip" > gradle/wrapper/gradle-wrapper.properties
+            chmod +x ./gradlew || echo "gradlew permission set"
+            git config --global user.name "kevinonme"
+            git config --global user.email "kevin@users.noreply.github.com"
+            git add gradlew gradlew.bat gradle/wrapper/
+            git commit -m "Add Gradle wrapper automatically"
+            git push https://$GITHUB_API_TOKEN@github.com/kevinonme/LeBr2.git main
+          else
+            echo "Gradle wrapper exists."
+          fi
+
+      # 3️⃣ Setup Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Setup Android SDK
+      # 4️⃣ Setup Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
         with:
           api-level: 34
           build-tools: 34.0.0
 
-      # 4️⃣ Make Gradle wrapper executable
-      - name: Make Gradle Wrapper Executable
+      # 5️⃣ Make Gradle executable
+      - name: Make Gradle Executable
         run: chmod +x ./gradlew
 
-      # 5️⃣ Copy icon.png to all mipmap densities
+      # 6️⃣ Copy icon.png to all mipmap densities
       - name: Prepare Launcher Icons
         run: |
           ICON_PATH=icon.png
@@ -46,12 +66,12 @@ jobs:
             cp $ICON_PATH app/src/main/res/mipmap-$D/ic_launcher.png || true
           done
 
-      # 6️⃣ Build Release APK
-      - name: Assemble Release APK
+      # 7️⃣ Build Release APK
+      - name: Build APK
         run: ./gradlew assembleRelease
 
-      # 7️⃣ Create Release & Upload APK
-      - name: Create GitHub Release and Upload APK
+      # 8️⃣ Create Release and Upload APK
+      - name: Create Release and Upload APK
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.version }}
@@ -61,6 +81,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 8️⃣ Success message
+      # 9️⃣ Success
       - name: Release Complete
         run: echo "✅ LeBr2 v${{ github.event.inputs.version }} APK released successfully 💖🚀"
